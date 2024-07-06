@@ -12,12 +12,19 @@ pub async fn get_clients() -> impl Responder {
 
 #[get("clients/{id}")]
 pub async fn get_clients_by_id(id: web::Path<i32>) -> impl Responder {
-    HttpResponse::Ok().json(id.to_string())
+    match services::clients_service::get_clients_by_id_service(id.into_inner()) {
+        Ok(client) => HttpResponse::Ok().json(client),
+        Err(_) => HttpResponse::InternalServerError().json("Error"),
+    }
 }
 
 #[post("clients")]
 pub async fn create_clients(req_body: web::Json<Client>) -> impl Responder {
-    HttpResponse::Created().json(req_body)
+    let new_client: Client = req_body.into_inner();
+    match services::clients_service::post_clients_service(new_client) {
+        Ok(client) => HttpResponse::Created().json(client),
+        Err(_) => HttpResponse::InternalServerError().json("Error"),
+    }
 }
 
 #[delete("clients/{id}")]

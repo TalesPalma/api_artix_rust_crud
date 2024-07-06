@@ -1,0 +1,12 @@
+version: '3.8'  # Specify the Docker Compose version
+
+services:
+  db:
+    image: mysql:latest  # Use the latest MySQL image for updates
+    restart: always  # Restart the container automatically on crashes
+    environment:
+      MYSQL_ROOT_PASSWORD: root  # Set the root password (not recommended for production)
+    ports:
+      - "3306:3306"  # Map the container port 3306 to the host port 3306
+
+

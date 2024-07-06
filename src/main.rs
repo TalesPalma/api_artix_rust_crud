@@ -1,11 +1,13 @@
 mod controller;
+mod database;
 mod models;
 mod repository;
+mod schema;
 mod services;
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+
+use actix_web::{get, middleware::Logger, App, HttpResponse, HttpServer, Responder};
 use config::{Config, ConfigError, File};
 use serde::Deserialize;
-
 #[derive(Debug, Deserialize)]
 struct ServerConfig {
     host: String,
@@ -40,6 +42,8 @@ async fn main() -> std::io::Result<()> {
     println!("Server running on {}", andress);
     HttpServer::new(|| {
         App::new()
+            .wrap(Logger::default())
+            .wrap(Logger::new("%a %{User-Agent}i"))
             .service(index)
             .service(controller::clients_controller::get_clients)
             .service(controller::clients_controller::get_clients_by_id)
