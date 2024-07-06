@@ -1,34 +1,48 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+mod controller;
+mod models;
+mod services;
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use config::{Config, ConfigError, File};
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct ServerConfig {
+    host: String,
+    port: u16,
+}
+
+#[derive(Debug, Deserialize)]
+struct AppConfig {
+    server: ServerConfig,
+}
+
+fn load_config() -> Result<AppConfig, ConfigError> {
+    let cfg = Config::builder()
+        .set_default("default", "1")?
+        .add_source(File::with_name("Actix"))
+        .build()?;
+
+    cfg.try_deserialize()
+}
 
 #[get("/")]
-async fn hello() -> impl Responder {
+async fn index() -> impl Responder {
     HttpResponse::Ok().body("Hello world!")
-}
-
-#[get("/tales")]
-async fn tales_rota() -> impl Responder {
-    HttpResponse::Ok().body("Tales lindo e maravilhoso")
-}
-
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-
-async fn manual_hello() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let config = load_config().unwrap();
+    let server_cfg = config.server;
+    let andress = format!("{}:{}", server_cfg.host, server_cfg.port);
+
+    println!("Server running on {}", andress);
     HttpServer::new(|| {
         App::new()
-            .service(hello)
-            .service(echo)
-            .service(tales_rota)
-            .route("/hey", web::get().to(manual_hello))
+            .service(index)
+            .service(controller::clients_controller::get_clients)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(&andress)?
     .run()
     .await
 }
