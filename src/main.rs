@@ -1,5 +1,6 @@
 mod controller;
 mod models;
+mod repository;
 mod services;
 use actix_web::{get, App, HttpResponse, HttpServer, Responder};
 use config::{Config, ConfigError, File};
@@ -41,6 +42,9 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(index)
             .service(controller::clients_controller::get_clients)
+            .service(controller::clients_controller::get_clients_by_id)
+            .service(controller::clients_controller::create_clients)
+            .service(controller::clients_controller::delete_clients)
     })
     .bind(&andress)?
     .run()
